@@ -1,0 +1,67 @@
+[
+  {
+    "key": "Welcome Message",
+    "values": [
+      "Let's start knowing each other better. What do you think?",
+      "I think it would be nice to start getting to know better each other",
+      "Welcome to Mobile phone assistant. I am glad to help you find the best mobile phone for you. Let's start knowing you better'"
+    ]
+  },
+
+  {
+    "key": "Ask Name Message",
+    "values": [
+      "What is your name?",
+      "May i have your name?",
+      "How may I address you?",
+      "How do they call you?",
+      "I will need your name",
+      "May I ask you what's your name?",
+      "Could you tell me you name?"
+    ]
+  },
+
+  {
+    "key": "Ask Age Message",
+    "values": [
+      "What is your age",
+      "May i have your age too",
+      "I will need your age too",
+      "May I ask you what's your age",
+      "Could you tell me you age"
+    ]
+  },
+
+  {
+    "key": "Ask Interests Message",
+    "values": [
+      "How do you spend your time when you're not working/going to school?",
+      "What do you like to do for fun?",
+      "So you have any hobbies? and if yes, what are these",
+      "What do you do in your free time?",
+      "Tell me about your hobbies..."
+    ]
+  },
+
+  {
+    "key": "Age Not Valid Message",
+    "values": [
+      "This is not a valid age... perhaps you do not wish to expose that information to us",
+      "As i know, age is usually a number",
+      "This is not a valid number for age",
+      "hmmmmm i can not proccess this data as a valid age",
+      "This age is not valid to me"
+    ]
+  },
+
+  {
+    "key": "Ask Occupation",
+    "values": [
+      "What do you do for a living?",
+      "So where do you work?",
+      "I'd be interested to hear about what you do for a living?",
+      "What is your profession?",
+      "What kind of work do you do?"
+    ]
+  }
+]
