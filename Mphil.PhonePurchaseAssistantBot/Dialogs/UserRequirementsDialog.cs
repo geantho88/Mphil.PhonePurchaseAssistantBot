@@ -1,5 +1,8 @@
 ﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Schema;
+using Mphil.PhonePurchaseAssistantBot.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +12,11 @@ using System.Threading.Tasks;
 
 namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 {
-    public class UserRequirementsDialog : ComponentDialog
+    public class UserRequirementsDialog : BaseDialog
     {
-
+        private readonly List<BotData> botData;
+        private readonly List<string> badWords;
+        private readonly Random rnd;
         // Define value names for values tracked inside the dialogs.
         private const string userRequirements = "value-userRequirements";
 
@@ -20,22 +25,36 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
         {
             AddDialog(new TextPrompt("SelectTypeOfPhoneAsync"));
             AddDialog(new TextPrompt("SelectBudgetAsync"));
+            AddDialog(new TextPrompt("StartSelectionStepAsync"));
 
             AddDialog(new WaterfallDialog(nameof(WaterfallDialog), new WaterfallStep[]
             {
                 SelectTypeOfPhoneAsync,
                 SelectBudgetAsync,
-                //StartSelectionStepAsync,
+                StartSelectionStepAsync,
                 //AcknowledgementStepAsync,
             }));
 
             InitialDialogId = nameof(WaterfallDialog);
+
+            string path = System.IO.Directory.GetCurrentDirectory();
+            var botDataJson = System.IO.File.ReadAllText(path + "/Bots/BotData.json");
+            var badWorkdsJson = System.IO.File.ReadAllText(path + "/Dictionaries/badwords.json");
+
+            botData = JsonConvert.DeserializeObject<List<BotData>>(botDataJson);
         }
 
-        private static async Task<DialogTurnResult> SelectTypeOfPhoneAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        private async Task<DialogTurnResult> SelectTypeOfPhoneAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if (DialogChecker.MessageContainsBadWords((string)stepContext.Result))
+            {
+                var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                await stepContext.EndDialogAsync();
+            }
+
             await stepContext.Context.SendActivityAsync($"Do you prefer Smartphones or feature phones? Let me explain before you decide...", cancellationToken: cancellationToken);
-            
+
             await stepContext.Context.SendActivityAsync($"Smartphones are distinguished from feature phones by their stronger hardware capabilities and extensive mobile operating systems, which facilitate wider software, internet", cancellationToken: cancellationToken);
             await stepContext.Context.SendActivityAsync(MessageFactory.ContentUrl("https://www.e-shop.gr/images/TEL/BIG/TEL.092396.jpg", MediaTypeNames.Image.Jpeg, "Smartphone", "This is how a smartphone looks like"));
 
@@ -44,52 +63,46 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
             await stepContext.Context.SendActivityAsync($"Note that smartphones are usually more expensive compared to feature phones", cancellationToken: cancellationToken);
 
-
-            await stepContext.Context.SendActivityAsync(MessageFactory.SuggestedActions(new List<string> { "Smartphone", "Feature phone" }, "What is your decision?"));
+            var opts = new PromptOptions
+            {
+                Prompt = new Activity
+                {
+                    Type = ActivityTypes.Message,
+                    Text = "What is your decision?",
+                    SuggestedActions = new SuggestedActions()
+                    {
+                        Actions = new List<CardAction>()
+                        {
+                        new CardAction() { Title = "Smartphone", Type = ActionTypes.ImBack, Value = "I want a smartphone" },
+                        new CardAction() { Title = "Feature phone", Type = ActionTypes.ImBack, Value = "I want a feature phone" },
+                         },
+                    },
+                }
+            };
 
             // Ask the user to enter their name.
-            return await stepContext.NextAsync();
+            return await stepContext.PromptAsync("SelectBudgetAsync", opts, cancellationToken);
         }
 
         private async Task<DialogTurnResult> SelectBudgetAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            return await stepContext.NextAsync();
+            var smartphoneTypeSelected = (string)stepContext.Result;
+
+            var phoneType = smartphoneTypeSelected == "I want a smartphone" ? "Smartphone" : "Feature Phone";
+
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"You prefer {phoneType}!, that's a good choice"), cancellationToken);
+
+            var askBudgetMessage = botData.SingleOrDefault(a => a.key == "Ask Budget Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+
+            var promptOptions = new PromptOptions { Prompt = MessageFactory.Text(askBudgetMessage) };
+            return await stepContext.PromptAsync("StartSelectionStepAsync", promptOptions, cancellationToken);
         }
 
-        //private async Task<DialogTurnResult> StartSelectionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        //{
-        //    // Set the user's age to what they entered in response to the age prompt.
-        //    var userProfile = (UserProfile)stepContext.Values[UserInfo];
-        //    userProfile.Age = (int)stepContext.Result;
+        private async Task<DialogTurnResult> StartSelectionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Thanks for your valuable information. I am looking for the best choice!!"), cancellationToken);
+            return await stepContext.PromptAsync("SearchPhoneAsync", null, cancellationToken);
+        }
 
-        //    if (userProfile.Age < 25)
-        //    {
-        //        // If they are too young, skip the review selection dialog, and pass an empty list to the next step.
-        //        await stepContext.Context.SendActivityAsync(
-        //            MessageFactory.Text("You must be 25 or older to participate."),
-        //            cancellationToken);
-        //        return await stepContext.NextAsync(new List<string>(), cancellationToken);
-        //    }
-        //    else
-        //    {
-        //        // Otherwise, start the review selection dialog.
-        //        return await stepContext.BeginDialogAsync(nameof(ReviewSelectionDialog), null, cancellationToken);
-        //    }
-        //}
-
-        //private async Task<DialogTurnResult> AcknowledgementStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        //{
-        //    // Set the user's company selection to what they entered in the review-selection dialog.
-        //    var userProfile = (UserProfile)stepContext.Values[UserInfo];
-        //    userProfile.CompaniesToReview = stepContext.Result as List<string> ?? new List<string>();
-
-        //    // Thank them for participating.
-        //    await stepContext.Context.SendActivityAsync(
-        //        MessageFactory.Text($"Thanks for participating, {((UserProfile)stepContext.Values[UserInfo]).Name}."),
-        //        cancellationToken);
-
-        //    // Exit the dialog, returning the collected user information.
-        //    return await stepContext.EndDialogAsync(stepContext.Values[UserInfo], cancellationToken);
-        //}
     }
 }

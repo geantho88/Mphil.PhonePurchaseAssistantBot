@@ -13,11 +13,11 @@ using System.Threading.Tasks;
 
 namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 {
-    public class WelcomeDialog : ComponentDialog
+    public class WelcomeDialog : BaseDialog
     {
         // Define value names for values tracked inside the dialogs.
         private const string userInfo = "value-userInfo";
-        private readonly List<BotData> botData;
+        private readonly List<BotData> botData;     
         private readonly Random rnd;
 
         public WelcomeDialog()
@@ -47,7 +47,7 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             string path = System.IO.Directory.GetCurrentDirectory();
             var botDataJson = System.IO.File.ReadAllText(path + "/Bots/BotData.json");
             botData = JsonConvert.DeserializeObject<List<BotData>>(botDataJson);
-
+           
             rnd = new Random();
         }
 
@@ -55,6 +55,13 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
         {
             var welcomeMessage = botData.SingleOrDefault(a => a.key == "Welcome Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
             var responsetext = stepContext.Context.Activity.Text.ToLowerInvariant();
+
+            if (DialogChecker.MessageContainsBadWords(responsetext))
+            {
+                var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
+            }
 
             if (responsetext.Contains("hello") || responsetext.Contains("hi"))
             {
@@ -84,11 +91,20 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> AgeStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if (DialogChecker.MessageContainsBadWords((string)stepContext.Result))
+            {
+                var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                await stepContext.EndDialogAsync();
+            }
+
             var askAgeMessage = botData.SingleOrDefault(a => a.key == "Ask Age Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
 
             // Set the user's name to what they entered in response to the name prompt.
             var userProfile = (UserProfile)stepContext.Values[userInfo];
+
             userProfile.Name = (string)stepContext.Result;
+            userProfile.Name = userProfile.Name.Replace("my name is", string.Empty, StringComparison.InvariantCultureIgnoreCase);
 
             if (string.IsNullOrEmpty(userProfile.Name))
             {
@@ -107,6 +123,13 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> OccupationStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if (DialogChecker.MessageContainsBadWords((string)stepContext.Result))
+            {
+                var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                await stepContext.EndDialogAsync();
+            }
+
             var ageNotValidMessage = botData.SingleOrDefault(a => a.key == "Age Not Valid Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
             var askOccupationMessage = botData.SingleOrDefault(a => a.key == "Ask Occupation").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
 
@@ -150,6 +173,13 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> InterestsStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if (DialogChecker.MessageContainsBadWords((string)stepContext.Result))
+            {
+                var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                await stepContext.EndDialogAsync();
+            }
+
             var askInterestsMessage = botData.SingleOrDefault(a => a.key == "Ask Interests Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
 
             // Set the user's age to what they entered in response to the age prompt.
@@ -164,20 +194,27 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> SummarizeStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
+            if (DialogChecker.MessageContainsBadWords((string)stepContext.Result))
+            {
+                var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
+                await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                await stepContext.EndDialogAsync();
+            }
+
             // Set the user's age to what they entered in response to the age prompt.
             var userProfile = (UserProfile)stepContext.Values[userInfo];
             userProfile.Interests = (string)stepContext.Result;
 
             StringBuilder s = new StringBuilder();
             s.Append($"To sum up, your name is {userProfile.Name} ");
-            
+
             if (userProfile.Age > 0)
             {
                 s.Append($"you are {userProfile.Age} years old, ");
             }
             else
             {
-                s.Append("You do not want to share your age with me, "); 
+                s.Append("You do not want to share your age with me, ");
             }
 
             s.Append($"you are working as {userProfile.Occupation} ");
@@ -188,6 +225,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Let's find what i can do for you in purchasing an awesome phone which suits 100% your needs"), cancellationToken);
 
             return await stepContext.BeginDialogAsync(nameof(UserRequirementsDialog), null, cancellationToken);
-        }
+        }      
     }
 }

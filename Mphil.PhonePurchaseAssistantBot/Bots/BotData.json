@@ -63,5 +63,25 @@
       "What is your profession?",
       "What kind of work do you do?"
     ]
+  },
+
+  {
+    "key": "Ask Budget Message",
+    "values": [
+      "What's your budget?",
+      "How much money you would like to spend?",
+      "Please tell me your maximum amount available for this purchase?",
+      "What should the maximun price be as per your budget?"
+    ]
+  },
+
+  {
+    "key": "Bad Words Reply Generic Messages",
+    "values": [
+      "I really can't help solve your issue if you are addressing me in this way. Conversation ends here",
+      "I unfortunately will not be able to assist you further if you continue to address me in this fashion. If you are willing to try and work with me in a different manne please come back later. Ending conversation...",
+      "Unfortunately I will have to disconnect with you at this time due to your tone and treatment of me. Bye...",
+      "Sorry but i can not handle such behavior. You have to be more polite to me. I will end this conversation right now..."
+    ]
   }
 ]

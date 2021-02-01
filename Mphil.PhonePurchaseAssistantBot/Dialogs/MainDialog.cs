@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 {
-    public class MainDialog : ComponentDialog
+    public class MainDialog : BaseDialog
     {
         private readonly UserState _userState;
 
@@ -37,17 +37,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> FinalStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            //var userInfo = (UserProfile)stepContext.Result;
-
-            //string status = "You are signed up to review "
-            //    + (userInfo.CompaniesToReview.Count is 0 ? "no companies" : string.Join(" and ", userInfo.CompaniesToReview))
-            //    + ".";
-
-            //await stepContext.Context.SendActivityAsync(status);
-
-            //var accessor = _userState.CreateProperty<UserProfile>(nameof(UserProfile));
-            //await accessor.SetAsync(stepContext.Context, userInfo, cancellationToken);
-
             return await stepContext.EndDialogAsync(null, cancellationToken);
         }
     }

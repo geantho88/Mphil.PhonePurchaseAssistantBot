@@ -11,5 +11,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Models
         public int Age { get; set; }
         public string Occupation { get; set; }
         public string Interests { get; set; }
+        public string PhoneType { get; set; }
     }
 }
