@@ -11,6 +11,9 @@ namespace Mphil.PhonePurchaseAssistantBot.Models
         public int Age { get; set; }
         public string Occupation { get; set; }
         public string Interests { get; set; }
-        public string PhoneType { get; set; }
+        public string PhoneTypeString { get; set; }
+        public string BudgetString { get; set; }
+        public double Budget => !string.IsNullOrEmpty(BudgetString)? double.Parse(BudgetString) : 0;
+        public PhoneType PhoneType => PhoneTypeString == "Smartphone"? PhoneType.Smartphone : PhoneType.FeaturePhone;
     }
 }

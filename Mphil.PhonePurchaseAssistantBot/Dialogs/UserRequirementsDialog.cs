@@ -1,6 +1,7 @@
 ﻿using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
+using Mphil.PhonePurchaseAssistantBot.Crawlers;
 using Mphil.PhonePurchaseAssistantBot.Models;
 using Newtonsoft.Json;
 using System;
@@ -89,6 +90,7 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             var smartphoneTypeSelected = (string)stepContext.Result;
 
             var phoneType = smartphoneTypeSelected == "I want a smartphone" ? "Smartphone" : "Feature Phone";
+            userProfile.PhoneTypeString = phoneType;
 
             await stepContext.Context.SendActivityAsync(MessageFactory.Text($"You prefer {phoneType}!, that's a good choice"), cancellationToken);
 
@@ -100,9 +102,25 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> StartSelectionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Thanks for your valuable information. I am looking for the best choice!!"), cancellationToken);
-            return await stepContext.PromptAsync("SearchPhoneAsync", null, cancellationToken);
-        }
+            var budget = (string)stepContext.Result;
 
+            double budgVael = 0;
+            double.TryParse(budget, out budgVael);
+
+            userProfile.BudgetString = budget;
+
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Thanks for your valuable information. I am looking for the best choice!!"), cancellationToken);
+
+            var eshopgrCrawler = new publicCrawler();
+            var results = eshopgrCrawler.FindProducts(userProfile);
+
+            results = results.OrderByDescending(a => a.Rating).ThenBy(x => x.Price).ToList();
+
+            var result = results.FirstOrDefault(a => a.Stock == "διαθέσιμο" && double.Parse(a.Price.Replace(",",".")) <= budgVael);
+
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"I suggest to buy the '{result.Brand}' {userProfile.PhoneTypeString} as it is currently available for purchase (in stock), it has a very high rating from users {result.Rating} out of 10 and it is within your budget range at {result.Price} € only! Check and buy now from this link your new Phone {result.ProductUrl}"), cancellationToken);
+
+            return await stepContext.EndDialogAsync(null, cancellationToken);
+        }
     }
 }

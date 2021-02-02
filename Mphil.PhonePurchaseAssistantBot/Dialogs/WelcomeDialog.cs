@@ -16,7 +16,7 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
     public class WelcomeDialog : BaseDialog
     {
         // Define value names for values tracked inside the dialogs.
-        private const string userInfo = "value-userInfo";
+      
         private readonly List<BotData> botData;     
         private readonly Random rnd;
 
@@ -101,7 +101,7 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             var askAgeMessage = botData.SingleOrDefault(a => a.key == "Ask Age Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
 
             // Set the user's name to what they entered in response to the name prompt.
-            var userProfile = (UserProfile)stepContext.Values[userInfo];
+            userProfile = (UserProfile)stepContext.Values[userInfo];
 
             userProfile.Name = (string)stepContext.Result;
             userProfile.Name = userProfile.Name.Replace("my name is", string.Empty, StringComparison.InvariantCultureIgnoreCase);
@@ -132,9 +132,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
             var ageNotValidMessage = botData.SingleOrDefault(a => a.key == "Age Not Valid Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
             var askOccupationMessage = botData.SingleOrDefault(a => a.key == "Ask Occupation").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
-
-            // Set the user's age to what they entered in response to the age prompt.
-            var userProfile = (UserProfile)stepContext.Values[userInfo];
 
             var age = Regex.Match(stepContext.Result.ToString(), @"\d+").Value;
 
@@ -183,7 +180,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             var askInterestsMessage = botData.SingleOrDefault(a => a.key == "Ask Interests Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
 
             // Set the user's age to what they entered in response to the age prompt.
-            var userProfile = (UserProfile)stepContext.Values[userInfo];
             userProfile.Occupation = (string)stepContext.Result;
 
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Thanks for your reply"), cancellationToken);
@@ -202,7 +198,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             }
 
             // Set the user's age to what they entered in response to the age prompt.
-            var userProfile = (UserProfile)stepContext.Values[userInfo];
             userProfile.Interests = (string)stepContext.Result;
 
             StringBuilder s = new StringBuilder();

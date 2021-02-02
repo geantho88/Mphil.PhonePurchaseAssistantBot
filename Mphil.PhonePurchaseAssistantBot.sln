@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mphil.PhonePurchaseAssistantBot", "Mphil.PhonePurchaseAssistantBot\Mphil.PhonePurchaseAssistantBot.csproj", "{F99DB6CC-4071-4DA0-99E5-14D1E3BFC68C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mphil.PhonePurchaseAssistantBot", "Mphil.PhonePurchaseAssistantBot\Mphil.PhonePurchaseAssistantBot.csproj", "{F99DB6CC-4071-4DA0-99E5-14D1E3BFC68C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mphil.PhonePurchaseAssistantBot.Tests", "Mphil.PhonePurchaseAssistantBot.Tests\Mphil.PhonePurchaseAssistantBot.Tests.csproj", "{8E81BA95-FEA3-45CA-9E13-4314378AAB8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{F99DB6CC-4071-4DA0-99E5-14D1E3BFC68C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F99DB6CC-4071-4DA0-99E5-14D1E3BFC68C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F99DB6CC-4071-4DA0-99E5-14D1E3BFC68C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E81BA95-FEA3-45CA-9E13-4314378AAB8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E81BA95-FEA3-45CA-9E13-4314378AAB8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E81BA95-FEA3-45CA-9E13-4314378AAB8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E81BA95-FEA3-45CA-9E13-4314378AAB8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
