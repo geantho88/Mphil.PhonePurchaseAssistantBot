@@ -16,8 +16,8 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
     public class WelcomeDialog : BaseDialog
     {
         // Define value names for values tracked inside the dialogs.
-      
-        private readonly List<BotData> botData;     
+
+        private readonly List<BotData> botData;
         private readonly Random rnd;
 
         public WelcomeDialog()
@@ -47,7 +47,7 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             string path = System.IO.Directory.GetCurrentDirectory();
             var botDataJson = System.IO.File.ReadAllText(path + "/Bots/BotData.json");
             botData = JsonConvert.DeserializeObject<List<BotData>>(botDataJson);
-           
+
             rnd = new Random();
         }
 
@@ -60,6 +60,13 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             {
                 var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
                 await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
+            }
+
+            var result = await LanguageDetectionMessageAsync(responsetext);
+            if (!string.IsNullOrEmpty(result))
+            {
+                await stepContext.Context.SendActivityAsync(result, cancellationToken: cancellationToken);
                 return await stepContext.EndDialogAsync();
             }
 
@@ -95,7 +102,14 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             {
                 var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
                 await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                await stepContext.EndDialogAsync();
+                return await stepContext.EndDialogAsync();
+            }
+
+            var result = await LanguageDetectionMessageAsync((string)stepContext.Result);
+            if (!string.IsNullOrEmpty(result))
+            {
+                await stepContext.Context.SendActivityAsync(result, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
             }
 
             var askAgeMessage = botData.SingleOrDefault(a => a.key == "Ask Age Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
@@ -127,7 +141,14 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             {
                 var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
                 await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                await stepContext.EndDialogAsync();
+                return await stepContext.EndDialogAsync();
+            }
+
+            var result = await LanguageDetectionMessageAsync((string)stepContext.Result);
+            if (!string.IsNullOrEmpty(result))
+            {
+                await stepContext.Context.SendActivityAsync(result, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
             }
 
             var ageNotValidMessage = botData.SingleOrDefault(a => a.key == "Age Not Valid Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
@@ -174,13 +195,22 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             {
                 var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
                 await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                await stepContext.EndDialogAsync();
+                return await stepContext.EndDialogAsync();
             }
+
+            var result = await LanguageDetectionMessageAsync((string)stepContext.Result);
+            if (!string.IsNullOrEmpty(result))
+            {
+                await stepContext.Context.SendActivityAsync(result, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
+            }
+
+            var professionsMatched = await DetectKeyPhrases((string)stepContext.Result);
 
             var askInterestsMessage = botData.SingleOrDefault(a => a.key == "Ask Interests Message").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
 
             // Set the user's age to what they entered in response to the age prompt.
-            userProfile.Occupation = (string)stepContext.Result;
+            userProfile.Occupation = professionsMatched;
 
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Thanks for your reply"), cancellationToken);
 
@@ -194,11 +224,13 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             {
                 var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
                 await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
-                await stepContext.EndDialogAsync();
+                return await stepContext.EndDialogAsync();
             }
 
+            var hobbiesMatched = await DetectKeyPhrases((string)stepContext.Result);
+
             // Set the user's age to what they entered in response to the age prompt.
-            userProfile.Interests = (string)stepContext.Result;
+            userProfile.Interests = hobbiesMatched;
 
             StringBuilder s = new StringBuilder();
             s.Append($"To sum up, your name is {userProfile.Name} ");
@@ -220,6 +252,6 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Let's find what i can do for you in purchasing an awesome phone which suits 100% your needs"), cancellationToken);
 
             return await stepContext.BeginDialogAsync(nameof(UserRequirementsDialog), null, cancellationToken);
-        }      
+        }
     }
 }

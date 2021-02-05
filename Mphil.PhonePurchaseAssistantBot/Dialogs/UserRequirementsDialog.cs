@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -52,6 +53,13 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
                 var reply = botData.SingleOrDefault(a => a.key == "Bad Words Reply Generic Messages").values.OrderBy(x => Guid.NewGuid()).FirstOrDefault();
                 await stepContext.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
                 await stepContext.EndDialogAsync();
+            }
+
+            var result = await LanguageDetectionMessageAsync((string)stepContext.Result);
+            if (!string.IsNullOrEmpty(result))
+            {
+                await stepContext.Context.SendActivityAsync(result, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
             }
 
             await stepContext.Context.SendActivityAsync($"Do you prefer Smartphones or feature phones? Let me explain before you decide...", cancellationToken: cancellationToken);
@@ -102,7 +110,16 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
         private async Task<DialogTurnResult> StartSelectionStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var budget = (string)stepContext.Result;
+            var budget = (string)stepContext.Result.ToString();
+
+            var result = await LanguageDetectionMessageAsync(budget);
+            if (!string.IsNullOrEmpty(result))
+            {
+                await stepContext.Context.SendActivityAsync(result, cancellationToken: cancellationToken);
+                return await stepContext.EndDialogAsync();
+            }
+
+            budget = Regex.Match(budget, @"\d+").Value;
 
             double budgVael = 0;
             double.TryParse(budget, out budgVael);
@@ -116,9 +133,9 @@ namespace Mphil.PhonePurchaseAssistantBot.Dialogs
 
             results = results.OrderByDescending(a => a.Rating).ThenBy(x => x.Price).ToList();
 
-            var result = results.FirstOrDefault(a => a.Stock == "διαθέσιμο" && double.Parse(a.Price.Replace(",",".")) <= budgVael);
+            var resultPhone = results.FirstOrDefault(a => a.Stock == "διαθέσιμο" && double.Parse(a.Price.Replace(",",".")) <= budgVael);
 
-            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"I suggest to buy the '{result.Brand}' {userProfile.PhoneTypeString} as it is currently available for purchase (in stock), it has a very high rating from users {result.Rating} out of 10 and it is within your budget range at {result.Price} € only! Check and buy now from this link your new Phone {result.ProductUrl}"), cancellationToken);
+            await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Dear {userProfile.Name}, I suggest you to buy the '{resultPhone.Brand}' {userProfile.PhoneTypeString} as it is currently available for purchase (in stock), it has a very high rating from users {resultPhone.Rating} out of 10 and it is within your budget range at {resultPhone.Price} € only! Check and buy now from this link your new Phone {resultPhone.ProductUrl}"), cancellationToken);
 
             return await stepContext.EndDialogAsync(null, cancellationToken);
         }
